@@ -1,0 +1,31 @@
+name = "HigherDyson3"
+defaultTargets = ["HigherDyson3"]
+platformIndependent = true
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+relaxedAutoImplicit = false
+
+# Mathlib's standard linter set. The `weak.` prefix means Lake will not fail if a
+# revision does not define the option.
+weak.linter.mathlibStandardSet = true
+
+# The Mathlib pin matches `lean-toolchain` (leanprover/lean4:v4.34.0). Bump the two in one
+# commit, then regenerate `lake-manifest.json`.
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.34.0"
+
+[[lean_lib]]
+name = "HigherDyson3"
+
+# The comparator pair. Deliberately not in defaultTargets: `Challenge` carries a
+# permanent `sorry` (its statements are the artifact). The comparator builds both
+# modules itself.
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"

@@ -1,0 +1,66 @@
+/-
+Copyright (c) 2026 AxiomMath. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Axiom Math
+-/
+module
+
+public import HigherDyson3.Periodization.EllipticTwistedLaw
+
+/-!
+# The untwisted elliptic law of the translated periodization
+
+For `m ≥ 2`, `x = e(α)` and `(τ, w + α/m) ∉ 𝒟_x` with `τ ∈ ℍ`, the translate
+`w ↦ ℰ_{m,x}(τ, w + α/m)` obeys, for all `a, b ∈ ℤ`, with `q = e(τ)` and `u = e(w)`,
+`ℰ_{m,x}(τ, w + α/m + aτ + b) = q^{-ma²} u^{-2ma} ℰ_{m,x}(τ, w + α/m)`.
+
+It follows from the twisted law at `w' = w + α/m`: the factor `e(α/m)^{-2ma} = x^{-2a}`
+coming from `e(w')^{-2ma}` cancels the twist `x^{2a}`.
+
+## Main results
+
+* `HigherDyson3.periodization_untwisted_law`: the untwisted elliptic law of the translate.
+
+## References
+
+* [AOS] Alfes, Ono, Swaminathan, *Beyond mock modularity: elliptic corrections for higher
+  Dyson ranks*.
+-/
+
+public section
+
+noncomputable section
+
+namespace HigherDyson3
+
+private lemma ellipticUntwistedLaw_e_add (z w : ℂ) : e (z + w) = e z * e w := by
+  unfold e; rw [← Complex.exp_add]; ring_nf
+
+private lemma ellipticUntwistedLaw_e_zpow (z : ℂ) (k : ℤ) : e z ^ k = e (k * z) := by
+  unfold e; rw [← Complex.exp_int_mul]; ring_nf
+
+/-- **Untwisted elliptic law** of the translate: for `a, b ∈ ℤ`,
+`ℰ_{m,x}(τ, w + α/m + aτ + b) = q^{-ma²} u^{-2ma} ℰ_{m,x}(τ, w + α/m)`, where
+`q = e(τ)` and `u = e(w)`. -/
+theorem periodization_untwisted_law {m : ℕ} (hm : 2 ≤ m) {α : ℚ} (hα0 : 0 ≤ α) (hα1 : α < 1)
+    {τ w : ℂ} (hτw : (τ, w + (α : ℂ) / m) ∈ halfPlaneProd \ divisor α) (a b : ℤ) :
+    periodization m α τ (w + (α : ℂ) / m + a * τ + b) =
+      e τ ^ (-(m : ℤ) * a ^ 2) * e w ^ (-2 * (m : ℤ) * a) *
+        periodization m α τ (w + (α : ℂ) / m) := by
+  rw [periodization_twisted_law hm hα0 hα1 hτw a b]
+  have hm0 : (m : ℂ) ≠ 0 := by exact_mod_cast (by omega : m ≠ 0)
+  have key : e α ^ (2 * a) * e (w + (α : ℂ) / m) ^ (-2 * (m : ℤ) * a) =
+      e w ^ (-2 * (m : ℤ) * a) := by
+    simp only [ellipticUntwistedLaw_e_zpow, ← ellipticUntwistedLaw_e_add]
+    congr 1
+    push_cast
+    field_simp
+    ring
+  calc e α ^ (2 * a) * e τ ^ (-(m : ℤ) * a ^ 2) * e (w + (α : ℂ) / m) ^ (-2 * (m : ℤ) * a) *
+        periodization m α τ (w + (α : ℂ) / m)
+      = e τ ^ (-(m : ℤ) * a ^ 2) *
+          (e α ^ (2 * a) * e (w + (α : ℂ) / m) ^ (-2 * (m : ℤ) * a)) *
+          periodization m α τ (w + (α : ℂ) / m) := by ring
+    _ = _ := by rw [key]
+
+end HigherDyson3
